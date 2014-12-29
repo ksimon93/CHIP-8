@@ -5,6 +5,7 @@
 /* =============================================================*/
 
 unsigned short opcode;
+unsigned short instruction;
 unsigned char memory[4096];
 
 // general purpose registers
@@ -38,10 +39,11 @@ void (*arithmetic_table[16])();
 
 void initialize() {
 	// clear hardware
-	pc 		= 0x200;
-	opcode 	= 0;
-	I 		= 0;
-	sp		= 0;
+	pc 				= 0x200;
+	opcode 			= 0;
+	instruction 	= 0;
+	I 				= 0;
+	sp				= 0;
 
 	// initialize memory
 	for (int i = 0; i < 80; i++) {
@@ -50,12 +52,13 @@ void initialize() {
 } 
 
 void fetch() {
-	opcode = ((memory[pc]) << 8) + (memory[pc+1]);
+	instruction = ((memory[pc]) << 8) + (memory[pc+1]);
+	opcode = instruction & 0xF000;
 	pc += 2;
 }
 
 void execute() {
-	function_table[ (opcode & 0xF000) >> 12 ]();
+	function_table[opcode >> 12]();
 }
 
 void fdx_cycle() {
@@ -64,7 +67,8 @@ void fdx_cycle() {
 }
 
 void arithmetic() {
-	arithmetic_table[ (opcode & 0x000F) ]();
+	opcode = instruction & 0x000F;
+	arithmetic_table[opcode]();
 }
 
 void (*function_table[17])() = {
@@ -82,3 +86,10 @@ void (*arithmetic_table[16])() = {
 							/* OPCODES */
 /* =============================================================*/
 void NOP() {}
+
+// 0x2NNN
+void call_subroutine() {
+	stack[sp] = pc;
+	sp++;
+	pc = instruction & 0x0FFF;
+}
