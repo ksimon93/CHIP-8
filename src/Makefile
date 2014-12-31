@@ -1,6 +1,6 @@
 CC=clang
 CFLAGS=-Wall
-OBJECTS=cpu.o main.o
+OBJECTS=cpu.o gfx.o mem.o input.o main.o
 EXECUTABLE=CHIP-8
 
 all: $(OBJECTS)

@@ -1,4 +1,5 @@
-#define FONTSET_SIZE 80
+#include "mem.h"
+#include "gfx.h"
 
 const unsigned char fontset[FONTSET_SIZE] =
 { 
@@ -19,3 +20,18 @@ const unsigned char fontset[FONTSET_SIZE] =
   0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
   0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
+
+void init_mem() {
+	// initialize memory
+	for (int i = 0; i < FONTSET_SIZE; i++) {
+		mem[i] = fontset[i];
+	}
+}
+
+unsigned short get_instruction(unsigned short pc) {
+	return ((mem[pc]) << 8) + (mem[pc+1]);
+}
+
+unsigned char get_byte (unsigned short loc) {
+	return mem[loc];
+}

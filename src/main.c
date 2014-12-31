@@ -2,6 +2,6 @@
 #include "cpu.h"
 
 int main (void) {
-	initialize();
+	init_cpu();
 	printf("Hello");
 }
