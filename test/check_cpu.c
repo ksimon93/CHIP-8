@@ -1,9 +1,9 @@
 #include "../src/cpu.h"
-#include "../src/cpu.c"
+#include "../src/mem.h"
 #include "minunit.h"
 
 void test_setup() {
-	initialize();
+	init_cpu();
 }
 
 void test_teardown() {}
@@ -11,7 +11,7 @@ void test_teardown() {}
 MU_TEST(test_fetch_init) {
 	// check if initialization is correct
 	mu_assert_int_eq(PC_START_ADDRESS, pc);
-	fetch();
+	//fetch();
 	mu_assert_int_eq(PC_START_ADDRESS+2, pc);
 }
 

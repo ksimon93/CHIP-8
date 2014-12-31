@@ -1,13 +1,16 @@
 CC=clang
 CFLAGS=-Wall
-OBJECTS=check_cpu.o
+SOURCES = $(wildcard *.c)
+OBJS=$(SOURCES:.c=.o)
+TESTS=$(SOURCES:.c=)
+ALL_FILES = $(wildcard ../src/*.c) $(wildcard ../test/*.c)
+NO_MAIN = $(filter-out ../src/main.c,$(ALL_FILES))
 EXECUTABLE=TEST
 
-test: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -o $(EXECUTABLE)
-	
-%.o: %.c
-	$(CC) $(CFLAGS) -c $<
+all: $(TESTS)
+
+$(TESTS): $(OBJS)
+	$(CC) $(CFLAGS) $(NO_MAIN) -o $(EXECUTABLE)
 
 clean:
 	rm *.o
