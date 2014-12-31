@@ -3,4 +3,5 @@
 
 int main (void) {
 	initialize();
+	printf("Hello");
 }
