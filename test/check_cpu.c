@@ -1,5 +1,6 @@
 #include "../src/cpu.h"
 #include "../src/mem.h"
+#include "../src/gfx.h"
 #include "minunit.h"
 
 void test_setup() {
@@ -8,16 +9,23 @@ void test_setup() {
 
 void test_teardown() {}
 
-MU_TEST(test_fetch_init) {
-	// check if initialization is correct
-	mu_assert_int_eq(PC_START_ADDRESS, pc);
-	//fetch();
-	mu_assert_int_eq(PC_START_ADDRESS+2, pc);
+MU_TEST(test_00E0) {
+	for (int i = 0; i < NUM_PIXELS; i++) {
+		gfx[i] = i;
+	}
+	mem[PC_START_ADDRESS] = 00E0;
+	cpu_cycle();
+	for (int i = 0; i < NUM_PIXELS; i++) {
+		mu_assert_int_eq(0, gfx[i]);
+	}
 }
 
 MU_TEST_SUITE(test_suite) {
 	MU_SUITE_CONFIGURE(&test_setup, &test_teardown);
-	MU_RUN_TEST(test_fetch_init);
+	printf("Testing opcode 00E0:\n");
+	MU_RUN_TEST(test_00E0);
+	printf("\nTest successful! Initializing next test.");
+
 }
 
 int main(int argc, char *argv[]) {

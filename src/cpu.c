@@ -31,21 +31,20 @@ void cpu_cycle() {
 	execute();
 }
 
-void arithmetic() {
+void zero_functions() {
 	opcode = instruction & 0x000F;
-	arithmetic_table[opcode]();
+	if (opcode == 0) zero_function_table[0]();
+	else zero_function_table[1]();
 }
 
 void (*function_table[17])() = {
-	NOP, NOP, NOP, NOP, NOP, NOP, NOP, NOP, 
-	arithmetic, NOP, NOP, NOP, NOP, 
+	zero_functions, NOP, NOP, NOP, NOP, NOP, NOP, NOP, 
+	NOP, NOP, NOP, NOP, NOP, 
 	NOP, NOP, NOP, NOP
 };
 
-void (*arithmetic_table[16])() = {
-	NOP, NOP, NOP, NOP, NOP, NOP, NOP, NOP, 
-	NOP, NOP, NOP, NOP, 
-	NOP, NOP, NOP, NOP
+void (*zero_function_table[2])() = {
+	op_00E0, op_00EE
 };
 
 							/* OPCODES */
@@ -67,4 +66,34 @@ void op_2NNN() {
 	stack[sp] = pc;
 	sp++;
 	pc = instruction & 0x0FFF;
+}
+
+void op_3XNN() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char NN = (instruction & 0x00FF);
+	if (V[X] == NN) pc += 2;
+}
+
+void op_4XNN() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char NN = (instruction & 0x00FF);
+	if (V[X] != NN) pc += 2;
+}
+
+void op_5XY0() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char Y = (instruction & 0x00F0) >> 4;
+	if (V[X] == V[Y]) pc += 2;
+}
+
+void op_6XNN() {
+	unsigned char NN = (instruction & 0x00FF);
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	V[X] = NN;
+}
+
+void op_7XNN() {
+	unsigned char NN = (instruction & 0x00FF);
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	V[X] += NN;
 }
