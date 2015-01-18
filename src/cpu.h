@@ -66,3 +66,5 @@ unsigned char sound_timer;
 
 unsigned short stack[STACK_SIZE];
 unsigned short sp;
+
+unsigned int seed;                  // seed used for RNG

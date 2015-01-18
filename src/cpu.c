@@ -1,6 +1,8 @@
 #include "cpu.h"
 #include "mem.h"
 #include "gfx.h"
+#include "input.h"
+#include <stdlib.h>
 
 					/* CPU MANAGEMENT FUNCTIONS */
 /* =============================================================*/
@@ -13,7 +15,8 @@ void init_cpu() {
 	I 				= 0;
 	sp				= 0;
     delay_timer     = 0;
-    sound_timer     = 0;	
+    sound_timer     = 0;
+    seed 			= 0;	
 } 
 
 void fetch() {
@@ -29,6 +32,7 @@ void execute() {
 void cpu_cycle() {
 	fetch();
 	execute();
+	seed++;
 }
 
 void zero_functions() {
@@ -71,19 +75,22 @@ void op_2NNN() {
 void op_3XNN() {
 	unsigned char X = (instruction & 0x0F00) >> 8;
 	unsigned char NN = (instruction & 0x00FF);
-	if (V[X] == NN) pc += 2;
+	if (V[X] == NN) 
+		pc += 2;
 }
 
 void op_4XNN() {
 	unsigned char X = (instruction & 0x0F00) >> 8;
 	unsigned char NN = (instruction & 0x00FF);
-	if (V[X] != NN) pc += 2;
+	if (V[X] != NN) 
+		pc += 2;
 }
 
 void op_5XY0() {
 	unsigned char X = (instruction & 0x0F00) >> 8;
 	unsigned char Y = (instruction & 0x00F0) >> 4;
-	if (V[X] == V[Y]) pc += 2;
+	if (V[X] == V[Y]) 
+		pc += 2;
 }
 
 void op_6XNN() {
@@ -96,4 +103,112 @@ void op_7XNN() {
 	unsigned char NN = (instruction & 0x00FF);
 	unsigned char X = (instruction & 0x0F00) >> 8;
 	V[X] += NN;
+}
+
+void op_8XY0() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char Y = (instruction & 0x00F0) >> 4;
+	V[X] = V[Y];
+}
+
+void op_8XY1() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char Y = (instruction & 0x00F0) >> 4;
+	V[X] = V[X] | V[Y];
+}
+
+void op_8XY2() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char Y = (instruction & 0x00F0) >> 4;
+	V[X] = V[X] & V[Y];
+}
+
+void op_8XY3() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char Y = (instruction & 0x00F0) >> 4;
+	V[X] = V[X] ^ V[Y];
+}
+
+void op_8XY4() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char Y = (instruction & 0x00F0) >> 4;
+	if (V[Y] > 0xFF - V[X]) 
+		V[0xF] = 1; // 1 if is a carry
+	else
+		V[0xF] = 0;
+	V[X] += V[Y];
+}
+
+void op_8XY5() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char Y = (instruction & 0x00F0) >> 4;
+	if (V[Y] > V[X])
+		V[0xF] = 0; // 0 if is a borrow
+	else
+		V[0xF] = 1;
+	V[X] -= V[Y];
+}
+
+void op_8XY6() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	V[0xF] = V[X] & 0x1;
+	V[X] = V[X] >> 1;
+}
+
+void op_8XY7() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char Y = (instruction & 0x00F0) >> 4;
+	if (V[X] > V[Y])
+		V[0xF] = 0; // 0 if is a borrow
+	else
+		V[0xF] = 1;
+	V[X] = V[Y] - V[X];
+}
+
+void op_8XYE() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	V[0xF] = V[X] & 0x80;
+	V[X] = V[X] << 1;
+}
+
+void op_9XY0() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char Y = (instruction & 0x00F0) >> 4;
+	if (V[X] != V[Y])
+		pc += 2;
+}
+
+void op_ANNN() {
+	I = instruction & 0x0FFF;
+}
+
+void op_BNNN() {
+	pc = (instruction & 0x0FFF) + V[0];
+}
+
+void op_CXNN() {
+	srand(seed);
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	V[X] = rand() + (instruction & 0x00FF);
+}
+
+void op_DXYN() {
+
+}
+
+void op_EX9E() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	if (is_key_pressed(V[X]))
+		pc += 2;
+}
+
+void op_EXA1() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	if (!is_key_pressed(V[X]))
+		pc += 2;
+}
+
+void op_FX07() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	V[X] = delay_timer;
 }
