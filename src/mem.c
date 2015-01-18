@@ -32,6 +32,10 @@ unsigned short get_instruction(unsigned short pc) {
 	return ((mem[pc]) << 8) + (mem[pc+1]);
 }
 
-unsigned char get_byte (unsigned short loc) {
+unsigned char get_byte(unsigned short loc) {
 	return mem[loc];
+}
+
+void set_mem(unsigned short addr, unsigned char val) {
+    mem[addr] = val;
 }

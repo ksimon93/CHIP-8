@@ -193,7 +193,10 @@ void op_CXNN() {
 }
 
 void op_DXYN() {
-
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	unsigned char Y = (instruction & 0x00F0) >> 4;
+	unsigned char height = instruction & 0x000F;
+	
 }
 
 void op_EX9E() {
@@ -211,4 +214,45 @@ void op_EXA1() {
 void op_FX07() {
 	unsigned char X = (instruction & 0x0F00) >> 8;
 	V[X] = delay_timer;
+}
+
+void op_FX0A() {
+
+}
+
+void op_FX15() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	delay_timer = V[X];
+}
+
+void op_FX18() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	sound_timer = V[X];
+}
+
+void op_FX1E() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	I += V[X];
+}
+
+void op_FX29() {
+
+}
+
+void op_FX33() {
+
+}
+
+void op_FX55() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	for (int i = 0; i <= X; i++) {
+		set_mem(I + i, V[i]);
+	}
+}
+
+void op_FX65() {
+	unsigned char X = (instruction & 0x0F00) >> 8;
+	for (int i = 0; i <= X; i++) {
+		V[i] = get_byte(I + i);
+	}
 }
