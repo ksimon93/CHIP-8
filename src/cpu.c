@@ -37,18 +37,25 @@ void cpu_cycle() {
 
 void zero_functions() {
 	opcode = instruction & 0x000F;
-	if (opcode == 0) zero_function_table[0]();
-	else zero_function_table[1]();
+	if (opcode == 0) 
+		op_00E0();
+	else 
+		op_00EE();
+}
+
+void eight_functions() {
+	opcode = instruction & 0x000F;
+	eight_function_table[opcode];
 }
 
 void (*function_table[17])() = {
-	zero_functions, NOP, NOP, NOP, NOP, NOP, NOP, NOP, 
-	NOP, NOP, NOP, NOP, NOP, 
-	NOP, NOP, NOP, NOP
+	zero_functions, op_1NNN, op_2NNN, op_3XNN, op_4XNN, op_5XY0, op_6XNN, 
+	op_7XNN, eight_functions, op_9XY0, op_ANNN, op_BNNN, op_CXNN, op_DXYN, 	
 };
 
-void (*zero_function_table[2])() = {
-	op_00E0, op_00EE
+void (*eight_function_table[15])() = {
+	op_8XY0, op_8XY1, op_8XY2, op_8XY3, op_8XY4, op_8XY5, op_8XY6, op_8XY7,
+	NOP, NOP, NOP, NOP, NOP, NOP, op_8XYE
 };
 
 							/* OPCODES */
@@ -196,7 +203,7 @@ void op_DXYN() {
 	unsigned char X = (instruction & 0x0F00) >> 8;
 	unsigned char Y = (instruction & 0x00F0) >> 4;
 	unsigned char height = instruction & 0x000F;
-	
+
 }
 
 void op_EX9E() {

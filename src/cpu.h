@@ -10,7 +10,7 @@ void execute();			// index into function table with opcode
 
 /* function pointers for opcode tables */
 void (*function_table[17])();
-void (*zero_function_table[2])();
+void (*eight_function_table[15])();
 
 /* OPCODES */
 void NOP();
