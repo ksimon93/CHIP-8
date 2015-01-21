@@ -4,19 +4,19 @@
 #include "input.h"
 #include <stdlib.h>
 
-					/* CPU MANAGEMENT FUNCTIONS */
-/* =============================================================*/
+		/* CPU MANAGEMENT FUNCTIONS */
+/*=============================================================*/
 
 void init_cpu() {
 	// clear hardware
-	pc 				= PC_START_ADDRESS;
-	opcode 			= 0;
-	instruction 	= 0;
-	I 				= 0;
-	sp				= 0;
-    delay_timer     = 0;
-    sound_timer     = 0;
-    seed 			= 0;	
+	pc			= PC_START_ADDRESS;
+	opcode			= 0;
+	instruction		= 0;
+	I			= 0;
+	sp			= 0;
+	delay_timer		= 0;
+	sound_timer		= 0;
+	seed 			= 0;	
 } 
 
 void fetch() {
@@ -58,8 +58,8 @@ void (*eight_function_table[15])() = {
 	NOP, NOP, NOP, NOP, NOP, NOP, op_8XYE
 };
 
-							/* OPCODES */
-/* =============================================================*/
+			/* OPCODES */
+/*=============================================================*/
 void NOP() {}
 
 void op_00E0() { init_gfx(); }
