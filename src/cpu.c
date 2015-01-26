@@ -153,7 +153,10 @@ void (*eight_function_table[15])() = {
 /*=============================================================*/
 void NOP() {}
 
-void op_00E0() { init_gfx(); }
+void op_00E0() { 
+	init_gfx();
+	draw_flag = 1; 
+}
 
 void op_00EE() {
     sp--;
@@ -312,6 +315,8 @@ void op_DXYN() {
             }
         }
     }
+    draw_flag = 1;
+
 }
 
 void op_EX9E() {
@@ -332,8 +337,12 @@ void op_FX07() {
 }
 
 void op_FX0A() {
-    printf("Opcode FX0A not implemented");
-    while(1);
+	int pressed = 0;
+	for (int i = 0; i < NUM_REGISTERS; i++) {
+		pressed += is_key_pressed(i);
+	}
+	if (pressed)
+		pc -= 2;
 }
 
 void op_FX15() {
