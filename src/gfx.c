@@ -11,7 +11,7 @@ void set_pixel(int r, int c, unsigned char value) {    gfx[r * 64 + c] = value;
 }
     
 unsigned char get_pixel(int r, int c) {
-    return gfx[r * 64 + c];
+    return gfx[(r * 64) + c];
 }
 
 

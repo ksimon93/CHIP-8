@@ -19,7 +19,8 @@ void init_cpu() {
 	delay_timer = 0;
 	sound_timer = 0;
 	draw_flag   = 1;
-	seed        = 0;	
+	seed        = 0;
+	init_mem();	
 } 
 
 void fetch() {
@@ -92,7 +93,7 @@ void E_functions() {
  * to implement as a switch table */
 void F_functions() {
     opcode = instruction & 0x000F;
-    unsigned char id = (instruction & 0x00F0) >> 1; // in case of FX55, 65, 15
+    unsigned char id = (instruction & 0x00F0) >> 4; // in case of FX55, 65, 15
     switch (opcode) {
         case 7:
             op_FX07();
@@ -285,21 +286,20 @@ void op_ANNN() {
 
 void op_BNNN() {
 	pc = (instruction & 0x0FFF) + V[0];
+	pc -= 2;
 }
 
 void op_CXNN() {
 	srand(seed);
 	unsigned char X = (instruction & 0x0F00) >> 8;
-	V[X] = rand() + (instruction & 0x00FF);
+	V[X] = (rand() % 0xFF) & (instruction & 0x00FF);
 }
 
 void op_DXYN() {
-	unsigned char X = (instruction & 0x0F00) >> 8;
-	unsigned char Y = (instruction & 0x00F0) >> 4;
+	unsigned short x = V[(instruction & 0x0F00) >> 8];
+	unsigned short y = V[(instruction & 0x00F0) >> 4];
 	unsigned char height = instruction & 0x000F;
 
-    unsigned short r = V[Y];    // row
-    unsigned short c = V[X];    // column
     unsigned short pixel_line;
 
     V[0xF] = 0;
@@ -307,16 +307,15 @@ void op_DXYN() {
         pixel_line = get_byte(I + yline);
         for (int xline = 0; xline < 8; xline++) {
             if ((pixel_line & (0x80 >> xline)) != 0) { // check particular pixel in line
-                unsigned char cur = get_pixel(r + yline, c + xline); // get a pixel using row major order
+                unsigned char cur = get_pixel(y + yline, x + xline); // get a pixel using row major order
                 if (cur == 1) {
                     V[0xF] = 1;
                 }
-                set_pixel(r + yline, c + xline, cur ^= 1);
+                set_pixel(y + yline, x + xline, cur^1);
             }
         }
     }
     draw_flag = 1;
-
 }
 
 void op_EX9E() {
@@ -341,7 +340,7 @@ void op_FX0A() {
 	for (int i = 0; i < NUM_REGISTERS; i++) {
 		pressed += is_key_pressed(i);
 	}
-	if (pressed)
+	if (!pressed)
 		pc -= 2;
 }
 
@@ -361,13 +360,16 @@ void op_FX1E() {
 }
 
 void op_FX29() {
-    printf("Opcode FX29 not implemented");
-    while(1);
+    unsigned char X = (instruction & 0x0F00) >> 8;
+    I = V[X] * 5;
 }
 
 void op_FX33() {
-    printf("Opcode FX33 not implemented");
-    while(1);
+    unsigned char X = (instruction & 0x0F00) >> 8;
+    X = get_byte(X);
+    set_mem(I, X / 100);
+    set_mem(I + 1, (X / 10) % 10);
+    set_mem(I + 2, X % 10);
 }
 
 void op_FX55() {
