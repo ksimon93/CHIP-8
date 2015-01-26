@@ -17,10 +17,10 @@ unsigned char gfx[NUM_PIXELS];
 unsigned char screen_data [SCREEN_HEIGHT][SCREEN_WIDTH][3];
 
 void init_gfx(); // clears screen
-void set_pixel(int r, int c, unsigned char value);
-unsigned char get_pixel(int r, int c);
 void create_screen(int *argcp, char **argv);
 void reshape_window(GLsizei w, GLsizei h);
+void set_pixel(int index, unsigned char value);
+unsigned char get_pixel(int index);
 void drawPixel(int x, int y);
 void updateQuads();
 

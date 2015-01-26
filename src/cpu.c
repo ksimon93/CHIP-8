@@ -306,12 +306,20 @@ void op_DXYN() {
     for (int yline = 0; yline < height; yline++) {
         pixel_line = get_byte(I + yline);
         for (int xline = 0; xline < 8; xline++) {
-            if ((pixel_line & (0x80 >> xline)) != 0) { // check particular pixel in line
-                unsigned char cur = get_pixel(y + yline, x + xline); // get a pixel using row major order
-                if (cur == 1) {
+            int pixel_index = (x + xline) + (y + yline) * 64; // get index into gfx for a particular pixel
+            if (x + xline < 0)
+                pixel_index += 64;
+            if (x + xline >= 64)
+                pixel_index -= 64;
+            if (y + yline < 0)
+                pixel_index += 32*64;
+            if (y + yline >= 32)
+                pixel_index += 32*64;
+            if ((pixel_line & (0x80 >> xline))) { // check particular pixel in line for collision
+                if (get_pixel(pixel_index)) { // check if pixel is set
                     V[0xF] = 1;
                 }
-                set_pixel(y + yline, x + xline, cur^1);
+                set_pixel(pixel_index, get_pixel(pixel_index)^1);
             }
         }
     }
@@ -377,6 +385,7 @@ void op_FX55() {
 	for (int i = 0; i <= X; i++) {
 		set_mem(I + i, V[i]);
 	}
+    I = I + X + 1;
 }
 
 void op_FX65() {
@@ -384,4 +393,5 @@ void op_FX65() {
 	for (int i = 0; i <= X; i++) {
 		V[i] = get_byte(I + i);
 	}
+    I = I + X + 1;
 }

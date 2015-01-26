@@ -7,11 +7,11 @@ void init_gfx() {
 	for (int i = 0; i < NUM_PIXELS; i++) gfx[i] = 0;
 }
 
-void set_pixel(int r, int c, unsigned char value) {    gfx[r * 64 + c] = value;
+void set_pixel(int pixel_index, unsigned char value) {    gfx[pixel_index] = value;
 }
     
-unsigned char get_pixel(int r, int c) {
-    return gfx[(r * 64) + c];
+unsigned char get_pixel(int index) {
+    return gfx[index];
 }
 
 
