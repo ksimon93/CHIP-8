@@ -2,21 +2,24 @@
 #include "mem.h"
 #include "gfx.h"
 #include "input.h"
+#include <GLUT/glut.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-		/* CPU MANAGEMENT FUNCTIONS */
+                /* CPU MANAGEMENT FUNCTIONS */
 /*=============================================================*/
 
 void init_cpu() {
 	// clear hardware
-	pc			= PC_START_ADDRESS;
-	opcode			= 0;
-	instruction		= 0;
-	I			= 0;
-	sp			= 0;
-	delay_timer		= 0;
-	sound_timer		= 0;
-	seed 			= 0;	
+	pc          = PC_START_ADDRESS;
+	opcode      = 0;
+	instruction = 0;
+	I           = 0;
+	sp          = 0;
+	delay_timer = 0;
+	sound_timer = 0;
+	draw_flag   = 1;
+	seed        = 0;	
 } 
 
 void fetch() {
@@ -32,7 +35,41 @@ void execute() {
 void cpu_cycle() {
 	fetch();
 	execute();
+	if (draw_flag) {
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		#ifdef DRAWWITHTEXTURE
+			update_texture();
+		#else
+			update_quads();
+		#endif
+			glutSwapBuffers();
+
+			draw_flag = 0;
+	}
 	seed++;
+}
+
+void load_rom(char *game_directory) {
+    FILE *rom = fopen(game_directory, "rb");
+    if (rom == NULL) {
+        printf("Error opening file");
+        exit(0);
+    }
+    fseek(rom, 0, SEEK_END);
+    long size = ftell(rom);
+    rewind(rom);
+    unsigned char *buffer = malloc(size * sizeof(char));
+    if (size != fread(buffer, 1, size, rom)) {
+        printf("Error reading file");
+        exit(0);
+    }
+    for (int i = 0; i < size; i++) {
+        set_mem(pc + i, buffer[i]);
+    }
+
+    fclose(rom);
+    free(buffer);
 }
 
 void zero_functions() {
@@ -43,14 +80,67 @@ void zero_functions() {
 		op_00EE();
 }
 
+void E_functions() {
+    opcode = instruction & 0x000F;
+    if (opcode == 1)
+        op_EXA1();
+    else
+        op_EX9E();
+}
+
+/* these opcodes have a wide range of identifying values so I decided
+ * to implement as a switch table */
+void F_functions() {
+    opcode = instruction & 0x000F;
+    unsigned char id = (instruction & 0x00F0) >> 1; // in case of FX55, 65, 15
+    switch (opcode) {
+        case 7:
+            op_FX07();
+        break;
+
+        case 0xA:
+            op_FX0A();
+        break;
+
+        case 8:
+            op_FX18();
+        break;
+
+        case 0xE:
+            op_FX1E();
+        break;
+
+        case 9:
+            op_FX29();
+        break;
+
+        case 3:
+            op_FX33();
+        break;
+
+        case 5:
+            if (id == 5)
+                op_FX55();
+            else if (id == 6)
+                op_FX65();
+            else
+                op_FX15();
+        break;
+
+        default:
+            printf("Unknown opcode %d", instruction);
+    }
+}
+
 void eight_functions() {
 	opcode = instruction & 0x000F;
 	eight_function_table[opcode];
 }
 
-void (*function_table[17])() = {
+void (*function_table[16])() = {
 	zero_functions, op_1NNN, op_2NNN, op_3XNN, op_4XNN, op_5XY0, op_6XNN, 
-	op_7XNN, eight_functions, op_9XY0, op_ANNN, op_BNNN, op_CXNN, op_DXYN, 	
+	op_7XNN, eight_functions, op_9XY0, op_ANNN, op_BNNN, op_CXNN, op_DXYN,
+    E_functions, F_functions,
 };
 
 void (*eight_function_table[15])() = {
@@ -58,7 +148,8 @@ void (*eight_function_table[15])() = {
 	NOP, NOP, NOP, NOP, NOP, NOP, op_8XYE
 };
 
-			/* OPCODES */
+
+                       /* OPCODES */
 /*=============================================================*/
 void NOP() {}
 
@@ -204,6 +295,23 @@ void op_DXYN() {
 	unsigned char Y = (instruction & 0x00F0) >> 4;
 	unsigned char height = instruction & 0x000F;
 
+    unsigned short r = V[Y];    // row
+    unsigned short c = V[X];    // column
+    unsigned short pixel_line;
+
+    V[0xF] = 0;
+    for (int yline = 0; yline < height; yline++) {
+        pixel_line = get_byte(I + yline);
+        for (int xline = 0; xline < 8; xline++) {
+            if ((pixel_line & (0x80 >> xline)) != 0) { // check particular pixel in line
+                unsigned char cur = get_pixel(r + yline, c + xline); // get a pixel using row major order
+                if (cur == 1) {
+                    V[0xF] = 1;
+                }
+                set_pixel(r + yline, c + xline, cur ^= 1);
+            }
+        }
+    }
 }
 
 void op_EX9E() {
@@ -224,7 +332,8 @@ void op_FX07() {
 }
 
 void op_FX0A() {
-
+    printf("Opcode FX0A not implemented");
+    while(1);
 }
 
 void op_FX15() {
@@ -243,11 +352,13 @@ void op_FX1E() {
 }
 
 void op_FX29() {
-
+    printf("Opcode FX29 not implemented");
+    while(1);
 }
 
 void op_FX33() {
-
+    printf("Opcode FX33 not implemented");
+    while(1);
 }
 
 void op_FX55() {

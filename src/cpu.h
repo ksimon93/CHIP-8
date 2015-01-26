@@ -1,3 +1,6 @@
+#ifndef CPU_H
+#define CPU_H
+
 #define NUM_REGISTERS 16
 #define STACK_SIZE 16
 #define PC_START_ADDRESS 0x200
@@ -7,10 +10,16 @@ void arithmetic();
 void cpu_cycle(); 		// fetch_decode_execute cycle
 void fetch();			// get current instruction from memory, inc pc
 void execute();			// index into function table with opcode
+void load_rom(char *game_directory);
 
 /* function pointers for opcode tables */
-void (*function_table[17])();
+void (*function_table[16])();
 void (*eight_function_table[15])();
+
+/* switch statement functions */
+void eight_functions();
+void E_functions();
+void F_functions();
 
 /* OPCODES */
 void NOP();
@@ -23,7 +32,7 @@ void op_4XNN(); 		// Skips the next instruction if VX doesn't equal NN.
 void op_5XY0(); 		// Skips the next instruction if VX equals VY.
 void op_6XNN();			// Sets VX to NN.
 void op_7XNN();			// Adds NN to VX.
-void op_8XY0();         	// Sets VX to the value of VY.
+void op_8XY0();             // Sets VX to the value of VY.
 void op_8XY1();         	// Sets VX to VX | VY
 void op_8XY2();        	 	// Sets VX to VX & VY
 void op_8XY3();         	// Sets VX to VX xor VY
@@ -67,4 +76,8 @@ unsigned char sound_timer;
 unsigned short stack[STACK_SIZE];
 unsigned short sp;
 
+unsigned char draw_flag;
+
 unsigned int seed;                  	// seed used for RNG
+
+#endif
